@@ -1,4 +1,10 @@
--- 🌐 XYZ Hub: Nurik Glass UI
+-- 🌐 XYZ Hub: Nurik Glass Edition
+
+-- Удаление старого GUI
+if game.Players.LocalPlayer.PlayerGui:FindFirstChild("XYZHub") then
+    game.Players.LocalPlayer.PlayerGui.XYZHub:Destroy()
+end
+
 local plr = game.Players.LocalPlayer
 local rs = game:GetService("RunService")
 local uis = game:GetService("UserInputService")
@@ -12,8 +18,8 @@ gui.Name = "XYZHub"
 local launcher = Instance.new("Frame", gui)
 launcher.Size = UDim2.new(0, 60, 0, 60)
 launcher.Position = UDim2.new(0.1, 0, 0.5, -30)
-launcher.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
-launcher.BackgroundTransparency = 0.2
+launcher.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+launcher.BackgroundTransparency = 0.15
 launcher.BorderSizePixel = 0
 Instance.new("UICorner", launcher).CornerRadius = UDim.new(1, 0)
 
@@ -38,18 +44,33 @@ Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 15)
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 50)
 title.Text = "🌐 XYZ Hub"
-title.TextColor3 = Color3.fromRGB(0, 255, 128)
+title.TextColor3 = Color3.fromRGB(255, 80, 80)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 26
 title.BackgroundTransparency = 1
 
--- 📑 Разделы
+-- ❌ Кнопка закрытия
+local closeBtn = Instance.new("TextButton", frame)
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -40, 0, 10)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.TextScaled = true
+closeBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
+closeBtn.MouseButton1Click:Connect(function()
+    gui:Destroy()
+    blur.Size = 0
+end)
+
+-- 📑 Разделы с градиентом
 local categories = {"Player", "Combat", "Visuals"}
 for i, cat in pairs(categories) do
     local btn = Instance.new("TextButton", frame)
     btn.Size = UDim2.new(0.3, -10, 0, 40)
     btn.Position = UDim2.new(0, 10 + (i-1)*150, 0, 60)
-    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    btn.BackgroundColor3 = Color3.fromRGB(255 - i*30, 50 + i*40, 50)
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Text = cat
     btn.Font = Enum.Font.Gotham
@@ -58,10 +79,10 @@ for i, cat in pairs(categories) do
 
     -- Hover Effect
     btn.MouseEnter:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        btn.BackgroundTransparency = 0.1
     end)
     btn.MouseLeave:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        btn.BackgroundTransparency = 0.3
     end)
 end
 
