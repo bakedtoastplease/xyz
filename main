@@ -1,0 +1,139 @@
+-- 🌌 XYZ Hub 🌌
+local plr = game.Players.LocalPlayer
+local rs = game:GetService("RunService")
+local gui = Instance.new("ScreenGui", plr.PlayerGui)
+gui.Name = "XYZHub"
+
+-- Main Frame
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 300, 0, 400)
+frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundTransparency = 1
+title.Text = "🌐 XYZ Hub"
+title.TextColor3 = Color3.fromRGB(0, 255, 128)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 22
+
+-- Drag
+local dragging, dragInput, dragStart, startPos
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
+end)
+rs.RenderStepped:Connect(function()
+    if dragging and dragInput then
+        local delta = dragInput.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- Toggle Buttons
+local toggles = {
+    {name = "Noclip", func = function(state)
+        rs.Stepped:Connect(function()
+            if state and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+                plr.Character.Humanoid:ChangeState(11)
+            end
+        end)
+    end},
+    {name = "Micro Hitbox", func = function(state)
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= plr and v.Character then
+                for _, p in pairs(v.Character:GetDescendants()) do
+                    if p:IsA("Part") or p:IsA("MeshPart") then
+                        p.CanCollide = not state
+                        p.Size = state and Vector3.new(0.1,0.1,0.1) or Vector3.new(2,2,1)
+                    end
+                end
+            end
+        end
+    end},
+    {name = "ESP", func = function(state)
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= plr then
+                if state then
+                    local box = Instance.new("BoxHandleAdornment")
+                    box.Name = "ESPBox"
+                    box.Adornee = v.Character and v.Character:FindFirstChild("HumanoidRootPart")
+                    box.Color3 = Color3.fromRGB(0,255,0)
+                    box.AlwaysOnTop = true
+                    box.Size = Vector3.new(4,6,2)
+                    box.Transparency = 0.5
+                    box.Parent = v.Character
+                else
+                    if v.Character:FindFirstChild("ESPBox") then
+                        v.Character.ESPBox:Destroy()
+                    end
+                end
+            end
+        end
+    end},
+    {name = "MM2 Role ESP", func = function(state)
+        if not state then
+            for _, v in pairs(game.Players:GetPlayers()) do
+                if v.Character and v.Character:FindFirstChild("ESPBox") then
+                    v.Character.ESPBox:Destroy()
+                end
+            end
+            return
+        end
+        rs.RenderStepped:Connect(function()
+            for _, v in pairs(game.Players:GetPlayers()) do
+                if v ~= plr and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                    local color = Color3.fromRGB(0,255,0)
+                    if v.Backpack:FindFirstChild("Knife") or (v.Character:FindFirstChild("Knife")) then
+                        color = Color3.fromRGB(255,0,0) -- Murder = Red
+                    elseif v.Backpack:FindFirstChild("Gun") or (v.Character:FindFirstChild("Gun")) then
+                        color = Color3.fromRGB(0,0,255) -- Sheriff = Blue
+                    end
+                    local box = v.Character:FindFirstChild("ESPBox")
+                    if not box then
+                        box = Instance.new("BoxHandleAdornment")
+                        box.Name = "ESPBox"
+                        box.Adornee = v.Character.HumanoidRootPart
+                        box.AlwaysOnTop = true
+                        box.Size = Vector3.new(4,6,2)
+                        box.Parent = v.Character
+                    end
+                    box.Color3 = color
+                    box.Transparency = 0.5
+                end
+            end
+        end)
+    end}
+}
+
+-- Создание кнопок
+for i, toggle in pairs(toggles) do
+    local btn = Instance.new("TextButton", frame)
+    btn.Size = UDim2.new(0.8, 0, 0, 40)
+    btn.Position = UDim2.new(0.1, 0, 0, 40 + (i-1)*50)
+    btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.Text = toggle.name.." [OFF]"
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 16
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
+
+    local state = false
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.Text = toggle.name..(state and " [ON]" or " [OFF]")
+        toggle.func(state)
+    end)
+end
