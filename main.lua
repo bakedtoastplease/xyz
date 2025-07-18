@@ -1,46 +1,42 @@
 local uis = game:GetService("UserInputService")
 local runService = game:GetService("RunService")
-local player = game.Players.LocalPlayer
-
-local char = player.Character or player.CharacterAdded:Wait()
-local leftArm = char:WaitForChild("LeftUpperArm")
+local plr = game.Players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
 local rightArm = char:WaitForChild("RightUpperArm")
 
-local moveHands = false
-local leftInput = Vector2.new(0, 0)
-local rightInput = Vector2.new(0, 0)
+local controlling = false
+local sensitivity = 0.1 -- чувствительность
 
--- 🎮 Обработка триггера (LT)
+-- Включение/выключение управления
 uis.InputBegan:Connect(function(input, processed)
-    if processed then return end
-    if input.KeyCode == Enum.KeyCode.ButtonL2 then
-        moveHands = true
+    if input.KeyCode == Enum.KeyCode.LeftControl then
+        controlling = true
+        print("✅ Управление правой рукой включено")
     end
 end)
 
-uis.InputEnded:Connect(function(input, processed)
-    if input.KeyCode == Enum.KeyCode.ButtonL2 then
-        moveHands = false
+uis.InputEnded:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.LeftControl then
+        controlling = false
+        print("❌ Управление правой рукой выключено")
     end
 end)
 
--- 🎮 Чтение стиков
-uis.InputChanged:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.Thumbstick1 then
-        leftInput = input.Position
-    elseif input.KeyCode == Enum.KeyCode.Thumbstick2 then
-        rightInput = input.Position
-    end
-end)
-
--- 🦾 Движение рук
+-- Управление мышкой
+local lastMousePos = uis:GetMouseLocation()
 runService.RenderStepped:Connect(function()
-    if moveHands then
-        -- Левая рука
-        leftArm.CFrame = leftArm.CFrame * 
-            CFrame.new(leftInput.X * 0.1, 0, -leftInput.Y * 0.1)
-        -- Правая рука
-        rightArm.CFrame = rightArm.CFrame * 
-            CFrame.new(rightInput.X * 0.1, 0, -rightInput.Y * 0.1)
+    if controlling then
+        local mousePos = uis:GetMouseLocation()
+        local delta = mousePos - lastMousePos
+        lastMousePos = mousePos
+
+        -- Двигаем правую руку в зависимости от движения мыши
+        rightArm.CFrame = rightArm.CFrame * CFrame.Angles(
+            math.rad(-delta.Y * sensitivity), -- вверх/вниз
+            math.rad(delta.X * sensitivity),  -- влево/вправо
+            0
+        )
+    else
+        lastMousePos = uis:GetMouseLocation()
     end
 end)
