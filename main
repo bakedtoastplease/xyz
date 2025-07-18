@@ -1,104 +1,102 @@
--- 🌌 XYZ Hub: Liquid Glass Style
+-- 🌐 XYZ Hub: Nurik LiquidGlass Style
 local plr = game.Players.LocalPlayer
 local rs = game:GetService("RunService")
+local uis = game:GetService("UserInputService")
+local blur = Instance.new("BlurEffect", game.Lighting)
+blur.Size = 0 -- Старт без размытия
+
 local gui = Instance.new("ScreenGui", plr.PlayerGui)
 gui.Name = "XYZHub"
 
--- Main Frame
+-- 🟢 Круглый лаунчер
+local launcher = Instance.new("Frame", gui)
+launcher.Size = UDim2.new(0, 60, 0, 60)
+launcher.Position = UDim2.new(0.1, 0, 0.5, -30)
+launcher.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+launcher.BackgroundTransparency = 0.2
+launcher.BorderSizePixel = 0
+Instance.new("UICorner", launcher).CornerRadius = UDim.new(1, 0)
+
+-- 🔥 Кнопка открытия
+local openText = Instance.new("TextLabel", launcher)
+openText.Size = UDim2.new(1, 0, 1, 0)
+openText.Text = "☰"
+openText.TextColor3 = Color3.fromRGB(255, 255, 255)
+openText.TextScaled = true
+openText.BackgroundTransparency = 1
+openText.Font = Enum.Font.GothamBold
+
+-- 🌌 Главное меню
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 350, 0, 450)
-frame.Position = UDim2.new(0.5, -175, 0.5, -225)
+frame.Size = UDim2.new(0, 400, 0, 500)
+frame.Position = UDim2.new(0.5, -200, 0.5, -250)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BackgroundTransparency = 0.3
+frame.BackgroundTransparency = 1
 frame.BorderSizePixel = 0
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 20)
+frame.Visible = false
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 15)
 
--- Blur Effect (Liquid Glass look)
-local blur = Instance.new("BlurEffect", game.Lighting)
-blur.Size = 10
-
--- Title
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 50)
-title.BackgroundTransparency = 1
-title.Text = "🌐 XYZ Hub – Liquid Glass"
+title.Text = "🌐 XYZ Hub"
 title.TextColor3 = Color3.fromRGB(0, 255, 128)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 22
+title.TextSize = 24
+title.BackgroundTransparency = 1
 
--- Dragging
-local dragging, dragInput, dragStart, startPos
-frame.InputBegan:Connect(function(input)
+-- ⚡ Dragging logic for launcher
+local dragging = false
+local dragInput, dragStart, startPos
+launcher.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
-        startPos = frame.Position
+        startPos = launcher.Position
         input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
         end)
     end
 end)
-frame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
+launcher.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
 end)
 rs.RenderStepped:Connect(function()
     if dragging and dragInput then
         local delta = dragInput.Position - dragStart
-        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        launcher.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
     end
 end)
 
--- Functions
-local toggles = {
-    {name = "Noclip", func = function(state)
-        rs.Stepped:Connect(function()
-            if state and plr.Character and plr.Character:FindFirstChild("Humanoid") then
-                plr.Character.Humanoid:ChangeState(11)
+-- 🌌 Открытие меню
+local menuOpen = false
+launcher.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and not dragging then
+        menuOpen = not menuOpen
+        if menuOpen then
+            frame.Visible = true
+            -- Плавное размытие и появление
+            for i = 0, 10 do
+                blur.Size = i
+                frame.BackgroundTransparency = 1 - i * 0.1
+                wait(0.02)
             end
-        end)
-    end},
-    {name = "Micro Hitbox", func = function(state)
-        for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= plr and v.Character then
-                for _, p in pairs(v.Character:GetDescendants()) do
-                    if p:IsA("Part") or p:IsA("MeshPart") then
-                        p.CanCollide = not state
-                        p.Size = state and Vector3.new(0.1,0.1,0.1) or Vector3.new(2,2,1)
-                    end
-                end
+        else
+            -- Плавное исчезновение
+            for i = 10, 0, -1 do
+                blur.Size = i
+                frame.BackgroundTransparency = 1 - i * 0.1
+                wait(0.02)
             end
+            frame.Visible = false
         end
-    end},
-    {name = "ESP + Chams", func = function(state)
-        for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= plr then
-                if state then
-                    local box = Instance.new("BoxHandleAdornment")
-                    box.Name = "ESPBox"
-                    box.Adornee = v.Character and v.Character:FindFirstChild("HumanoidRootPart")
-                    box.Color3 = Color3.fromRGB(0,255,0)
-                    box.AlwaysOnTop = true
-                    box.Size = Vector3.new(4,6,2)
-                    box.Transparency = 0.5
-                    box.Parent = v.Character
-                else
-                    if v.Character:FindFirstChild("ESPBox") then
-                        v.Character.ESPBox:Destroy()
-                    end
-                end
-            end
-        end
-    end},
-    {name = "MM2 Role ESP", func = function(state)
-        if not state then
-            for _, v in pairs(game.Players:GetPlayers()) do
-                if v.Character and v.Character:FindFirstChild("ESPBox") then
-                    v.Character.ESPBox:Destroy()
-                end
-            end
-            return
-        end
-        rs.RenderStepped:Connect(function()
-            for _, v in pairs(game.Players:GetPlayers()) do
-                if v ~= plr and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                    local color = Color3.fromRGB(0,255
+    end
+end)
