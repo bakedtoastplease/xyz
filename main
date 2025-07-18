@@ -1,4 +1,4 @@
--- 🌌 XYZ Hub 🌌
+-- 🌌 XYZ Hub: Liquid Glass Style
 local plr = game.Players.LocalPlayer
 local rs = game:GetService("RunService")
 local gui = Instance.new("ScreenGui", plr.PlayerGui)
@@ -6,21 +6,27 @@ gui.Name = "XYZHub"
 
 -- Main Frame
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 300, 0, 400)
-frame.Position = UDim2.new(0.5, -150, 0.5, -200)
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.Size = UDim2.new(0, 350, 0, 450)
+frame.Position = UDim2.new(0.5, -175, 0.5, -225)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BackgroundTransparency = 0.3
 frame.BorderSizePixel = 0
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 20)
 
+-- Blur Effect (Liquid Glass look)
+local blur = Instance.new("BlurEffect", game.Lighting)
+blur.Size = 10
+
+-- Title
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 40)
+title.Size = UDim2.new(1, 0, 0, 50)
 title.BackgroundTransparency = 1
-title.Text = "🌐 XYZ Hub"
+title.Text = "🌐 XYZ Hub – Liquid Glass"
 title.TextColor3 = Color3.fromRGB(0, 255, 128)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 22
 
--- Drag
+-- Dragging
 local dragging, dragInput, dragStart, startPos
 frame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -42,7 +48,7 @@ rs.RenderStepped:Connect(function()
     end
 end)
 
--- Toggle Buttons
+-- Functions
 local toggles = {
     {name = "Noclip", func = function(state)
         rs.Stepped:Connect(function()
@@ -63,7 +69,7 @@ local toggles = {
             end
         end
     end},
-    {name = "ESP", func = function(state)
+    {name = "ESP + Chams", func = function(state)
         for _, v in pairs(game.Players:GetPlayers()) do
             if v ~= plr then
                 if state then
@@ -95,45 +101,4 @@ local toggles = {
         rs.RenderStepped:Connect(function()
             for _, v in pairs(game.Players:GetPlayers()) do
                 if v ~= plr and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                    local color = Color3.fromRGB(0,255,0)
-                    if v.Backpack:FindFirstChild("Knife") or (v.Character:FindFirstChild("Knife")) then
-                        color = Color3.fromRGB(255,0,0) -- Murder = Red
-                    elseif v.Backpack:FindFirstChild("Gun") or (v.Character:FindFirstChild("Gun")) then
-                        color = Color3.fromRGB(0,0,255) -- Sheriff = Blue
-                    end
-                    local box = v.Character:FindFirstChild("ESPBox")
-                    if not box then
-                        box = Instance.new("BoxHandleAdornment")
-                        box.Name = "ESPBox"
-                        box.Adornee = v.Character.HumanoidRootPart
-                        box.AlwaysOnTop = true
-                        box.Size = Vector3.new(4,6,2)
-                        box.Parent = v.Character
-                    end
-                    box.Color3 = color
-                    box.Transparency = 0.5
-                end
-            end
-        end)
-    end}
-}
-
--- Создание кнопок
-for i, toggle in pairs(toggles) do
-    local btn = Instance.new("TextButton", frame)
-    btn.Size = UDim2.new(0.8, 0, 0, 40)
-    btn.Position = UDim2.new(0.1, 0, 0, 40 + (i-1)*50)
-    btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    btn.TextColor3 = Color3.fromRGB(255,255,255)
-    btn.Text = toggle.name.." [OFF]"
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 16
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
-
-    local state = false
-    btn.MouseButton1Click:Connect(function()
-        state = not state
-        btn.Text = toggle.name..(state and " [ON]" or " [OFF]")
-        toggle.func(state)
-    end)
-end
+                    local color = Color3.fromRGB(0,255
