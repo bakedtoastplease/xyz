@@ -1,4 +1,4 @@
--- 🌐 XYZ Hub: Nurik Glass Edition
+-- 🌐 XYZ Hub: Nurik Glass Edition (с Ease In-Out)
 
 -- Удаление старого GUI
 if game.Players.LocalPlayer.PlayerGui:FindFirstChild("XYZHub") then
@@ -8,8 +8,9 @@ end
 local plr = game.Players.LocalPlayer
 local rs = game:GetService("RunService")
 local uis = game:GetService("UserInputService")
+local tweenService = game:GetService("TweenService")
 local blur = Instance.new("BlurEffect", game.Lighting)
-blur.Size = 0 -- плавное размытие
+blur.Size = 0 -- Начальное размытие
 
 local gui = Instance.new("ScreenGui", plr.PlayerGui)
 gui.Name = "XYZHub"
@@ -117,26 +118,37 @@ rs.RenderStepped:Connect(function()
     end
 end)
 
--- 🌌 Открытие меню
+-- 🌌 Открытие меню с Ease In-Out
 local menuOpen = false
 launcher.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 and not dragging then
         menuOpen = not menuOpen
         if menuOpen then
             frame.Visible = true
-            -- Плавное размытие + fade
-            for i = 0, 10 do
-                blur.Size = i
-                frame.BackgroundTransparency = 1 - i*0.1
-                wait(0.01)
-            end
+            tweenService:Create(
+                blur,
+                TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+                {Size = 10}
+            ):Play()
+            tweenService:Create(
+                frame,
+                TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+                {BackgroundTransparency = 0.2}
+            ):Play()
         else
-            -- Закрытие
-            for i = 10, 0, -1 do
-                blur.Size = i
-                frame.BackgroundTransparency = 1 - i*0.1
-                wait(0.01)
-            end
+            local blurTween = tweenService:Create(
+                blur,
+                TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+                {Size = 0}
+            )
+            local frameTween = tweenService:Create(
+                frame,
+                TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+                {BackgroundTransparency = 1}
+            )
+            blurTween:Play()
+            frameTween:Play()
+            frameTween.Completed:Wait()
             frame.Visible = false
         end
     end
