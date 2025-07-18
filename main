@@ -1,7 +1,9 @@
--- 🌐 XYZ Hub: Nurik Lite
+-- 🌐 XYZ Hub: Nurik Glass UI
 local plr = game.Players.LocalPlayer
 local rs = game:GetService("RunService")
 local uis = game:GetService("UserInputService")
+local blur = Instance.new("BlurEffect", game.Lighting)
+blur.Size = 0 -- плавное размытие
 
 local gui = Instance.new("ScreenGui", plr.PlayerGui)
 gui.Name = "XYZHub"
@@ -11,7 +13,7 @@ local launcher = Instance.new("Frame", gui)
 launcher.Size = UDim2.new(0, 60, 0, 60)
 launcher.Position = UDim2.new(0.1, 0, 0.5, -30)
 launcher.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
-launcher.BackgroundTransparency = 0.15
+launcher.BackgroundTransparency = 0.2
 launcher.BorderSizePixel = 0
 Instance.new("UICorner", launcher).CornerRadius = UDim.new(1, 0)
 
@@ -25,10 +27,10 @@ openText.Font = Enum.Font.GothamBold
 
 -- 🌌 Главное меню
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 400, 0, 500)
-frame.Position = UDim2.new(0.5, -200, 0.5, -250)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BackgroundTransparency = 0.2
+frame.Size = UDim2.new(0, 450, 0, 500)
+frame.Position = UDim2.new(0.5, -225, 0.5, -250)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BackgroundTransparency = 1
 frame.BorderSizePixel = 0
 frame.Visible = false
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 15)
@@ -38,12 +40,33 @@ title.Size = UDim2.new(1, 0, 0, 50)
 title.Text = "🌐 XYZ Hub"
 title.TextColor3 = Color3.fromRGB(0, 255, 128)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 24
+title.TextSize = 26
 title.BackgroundTransparency = 1
 
--- Dragging logic for launcher
-local dragging = false
-local dragInput, dragStart, startPos
+-- 📑 Разделы
+local categories = {"Player", "Combat", "Visuals"}
+for i, cat in pairs(categories) do
+    local btn = Instance.new("TextButton", frame)
+    btn.Size = UDim2.new(0.3, -10, 0, 40)
+    btn.Position = UDim2.new(0, 10 + (i-1)*150, 0, 60)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Text = cat
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 18
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
+
+    -- Hover Effect
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end)
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    end)
+end
+
+-- ⚡ Dragging для лаунчера
+local dragging, dragInput, dragStart, startPos
 launcher.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
@@ -73,11 +96,27 @@ rs.RenderStepped:Connect(function()
     end
 end)
 
--- Открытие меню
+-- 🌌 Открытие меню
 local menuOpen = false
 launcher.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 and not dragging then
         menuOpen = not menuOpen
-        frame.Visible = menuOpen
+        if menuOpen then
+            frame.Visible = true
+            -- Плавное размытие + fade
+            for i = 0, 10 do
+                blur.Size = i
+                frame.BackgroundTransparency = 1 - i*0.1
+                wait(0.01)
+            end
+        else
+            -- Закрытие
+            for i = 10, 0, -1 do
+                blur.Size = i
+                frame.BackgroundTransparency = 1 - i*0.1
+                wait(0.01)
+            end
+            frame.Visible = false
+        end
     end
 end)
